@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import axios, { AxiosError } from "axios";
+import { toast } from "react-toastify";
 
 import { Ticker } from "../shared/types";
 
@@ -9,12 +10,10 @@ export const useFetchStocks = () => {
   const [items, setItems] = useState<Ticker[]>([]);
   const [loading, setLoading] = useState(false);
   const [nextUrl, setNextUrl] = useState("");
-  const [error, setError] = useState("");
 
   const getTickers = useCallback(
     async (search?: string) => {
       setLoading(true);
-      setError("");
 
       try {
         const response = await axios.get(
@@ -29,7 +28,7 @@ export const useFetchStocks = () => {
         setNextUrl(response.data.next_url);
       } catch (err) {
         if (err instanceof AxiosError && err.response) {
-          setError(err.response.data.error ?? "Failed to fetch tickers");
+          toast.error(err.response.data.error ?? "Failed to fetch tickers");
         }
       } finally {
         setLoading(false);
@@ -42,7 +41,6 @@ export const useFetchStocks = () => {
     if (!nextUrl) return;
 
     setLoading(true);
-    setError("");
 
     try {
       const response = await axios.get(
@@ -52,12 +50,12 @@ export const useFetchStocks = () => {
       setNextUrl(response.data.next_url);
     } catch (err) {
       if (err instanceof AxiosError && err.response) {
-        setError(err.response.data.error ?? "Failed to load more  tickers");
+        toast.error(err.response.data.error ?? "Failed to fetch tickers");
       }
     } finally {
       setLoading(false);
     }
   }, [nextUrl]);
 
-  return { items, loading, nextUrl, error, getTickers, loadMore };
+  return { items, loading, nextUrl, getTickers, loadMore };
 };
